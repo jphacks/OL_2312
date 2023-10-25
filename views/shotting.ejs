@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>写真の撮影</title>
+    <link rel="stylesheet" href="shotting.css" type="text/css">
+  </head>
+  <body>
+    <div class="container">
+      <div class="camera-side">
+        <div id="camera-div">
+          <video id="camera" width="640px" height="480px"></video>
+          <div id="clipping-frame"></div>
+        </div>
+      </div>
+      <div class="result-side">
+        <h1>撮影した画像</h1>
+        <div id="result-div">
+          <canvas id="picture" width="320px" height="240px"></canvas>
+        </div>
+      </div>
+    </div>
+    <button id="shutter">shutter</button>
+    <!-- <a href="" id="download-link" download><button id="download-button" disabled>download</button></a> -->
+    
+    <form method="POST" action="/index">
+      <button>submit_test</button>
+    </form>
+    
+    <!-- <form action="/" method="post" enctype="multipart/form-data">
+      <input type="file" name="clip" accept=".png">
+      <button id="btn-submit">submit</button>
+    </form> -->
+    <button id="btn-submit" onclick="location.href='/index'">submit</button>
+
+    <!-- <button id="btn-send">サーバーへアップロード</button> -->
+    <script src="shotting.js"></script>
+  </body>
+</html>

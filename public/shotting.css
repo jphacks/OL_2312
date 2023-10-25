@@ -1,0 +1,30 @@
+@charset "utf-8";
+.container{
+    display: flex;
+}
+.camera-side{
+    flex: 1;
+    border: solid;
+    display: flex;
+    justify-content: center;
+}
+#camera-div{
+    position: relative;
+}
+.result-side{
+    flex: 1;
+    border: solid;
+}
+#clipping-frame{
+    position: absolute;
+    border: solid 5px;
+    border-color: black;
+    transform: translate(-50%, -50%);
+}
+h1{
+    margin: 10px;
+}
+#result-div{
+    display: flex;
+    justify-content: center;
+}
