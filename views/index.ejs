@@ -32,17 +32,32 @@
             display: inline-block;
         }
 
-        .resizable {
+        #pdf-viewer .img-wrapper img {
+            width: 100%;
+            height: 100%;
+        }
+
+        #pdf-viewer .img-wrapper img:hover {
+            cursor: move;
+        }
+
+        #pdf-viewer .img-wrapper {
             position: absolute;
             width: fit-content;
             height: auto;
+        }
+
+        .resizable {
             resize: both;
             overflow: hidden;
         }
 
-        .resizable img {
-            width: 100%;
-            height: 100%;
+        .selected {
+            border: 1px solid blue;
+            transform: translate(-1px, -1px);
+            resize: both;
+            overflow: hidden;
+            z-index: 100;
         }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"
@@ -63,7 +78,7 @@
         <div id="figures">
             <script>
                 let figures = document.getElementById("figures");
-                
+
                 /*
                 function loadImage(url) {
                     let xhr = new XMLHttpRequest();
@@ -81,42 +96,42 @@
                         img.onerror = function () { return reject(url) };
                     });
                 };
-                
-                function loadFigures(i){
+
+                function loadFigures(i) {
                     let url = `figures/${i}.png`;
                     chk(url)
-                    .then((url) => {
-                        figures.innerHTML += `<div class="figure" draggable="true"><img src="${url}" draggable="false"></div>`;
-                        loadFigures(i+1);
-                    })
-                    .catch((url) => {
-                        console.log(i, "not found");
-                    });
+                        .then((url) => {
+                            figures.innerHTML += `<img src="${url}">`;
+                            loadFigures(i + 1);
+                        })
+                        .catch((url) => {
+                            console.log(i, "not found");
+                        });
                 }
                 loadFigures(0);
 
-                 fetch("/clip")
-                .then((res) => {
-                    return res.arrayBuffer();
-                })
-                .then((buffer) => {
-                    /*
-                    var bytes = new Uint8Array(buffer);
-                    // console.log(bytes);
-                    var binaryData = "";
-                    for (var i = 0, len = bytes.byteLength; i < len; i++) {
-                        binaryData += String.fromCharCode(bytes[i]);
-                    }
-                    let url = "data:image/png;base64," + window.btoa(binaryData);
-                    */
-                    console.log("hello");
-                    const blob = new Blob([buffer], {type: "image/png"});
-                    let url = URL.createObjectURL(blob); 
-                    figures.innerHTML += `<div class="figure" draggable="true"><img src="${url}" draggable="false"></div>`;
-                })
-                .catch((err) => {
-                    console.log(err);
-                });
+                fetch("/clip")
+                    .then((res) => {
+                        return res.arrayBuffer();
+                    })
+                    .then((buffer) => {
+                        /*
+                        var bytes = new Uint8Array(buffer);
+                        // console.log(bytes);
+                        var binaryData = "";
+                        for (var i = 0, len = bytes.byteLength; i < len; i++) {
+                            binaryData += String.fromCharCode(bytes[i]);
+                        }
+                        let url = "data:image/png;base64," + window.btoa(binaryData);
+                        */
+                        console.log("hello");
+                        const blob = new Blob([buffer], { type: "image/png"});
+                        let url = URL.createObjectURL(blob);
+                        figures.innerHTML += `<img src="${url}">`;
+                    })
+                    .catch((err) => {
+                        console.log(err);
+                    });
             </script>
         </div>
     </div>
@@ -126,167 +141,7 @@
         </div>
         <button id="download">save</button>
     </div>
-
-    <script>
-        window.onload = () => {
-            var viewer = document.getElementById("pdf-viewer");
-            var canvas;// = viewer.getElementsByTagName("canvas")[0];
-            var download = document.getElementById("download");
-            const scale = 2;
-
-            let transfer;
-
-            const url = "https://arxiv.org/pdf/1902.10186.pdf";
-
-            pdfjsLib.getDocument(url).promise.then((pdf) => {
-                // ページの順番を保つために同期
-                (async () => {
-                    for await (i of [...Array(pdf.numPages + 1).keys()].slice(1)) {
-                        await pdf.getPage(i).then((page) => {
-                            let viewport = page.getViewport({ scale: scale });
-                            let canvas = document.createElement("canvas");
-                            let context = canvas.getContext("2d", { willReadFrequently: true });
-                            canvas.width = viewport.width;
-                            canvas.height = viewport.height;
-                            canvas.setAttribute("id", i);
-                            viewer.appendChild(canvas);
-                            page.render({
-                                canvasContext: context,
-                                viewport: viewport
-                            });
-                        });
-                    }
-                })();
-            });
-
-            function canvases2pdf(path, canvases) {
-                let doc = new jspdf.jsPDF();
-                for (canvas of canvases) {
-                    let dataURL = canvas.toDataURL("image/png");
-                    doc.addImage(dataURL, "PNG", 0, 0, doc.getPageWidth(), doc.getPageHeight());
-                    doc.addPage();
-                }
-                doc.deletePage(canvases.length + 1);
-                doc.save(path);
-            }
-
-            function canvas2pdf(path, canvas) {
-
-                let context = canvas.getContext("2d", { willReadFrequently: true });
-                let scrollTop = 0;
-
-                let doc = new jspdf.jsPDF();/*{
-                        unit: "px",
-                        format: [width, height]
-                    });*/
-
-                const width = canvas.clientWidth;
-                const height = doc.getPageHeight() / doc.getPageWidth() * width;
-
-                let i = 0;
-
-                while (scrollTop < canvas.clientHeight) {
-                    let imageData = context.getImageData(0, scrollTop, width, height);
-                    let page = document.createElement("canvas");
-                    page.width = width;
-                    page.height = height;
-                    page.getContext("2d").putImageData(imageData, 0, 0);
-                    let dataURL = page.toDataURL("image/png");
-                    doc.addImage(dataURL, "PNG", 0, 0, width, height);
-                    doc.addPage();
-                    scrollTop += height;
-                }
-
-                doc.deletePage(doc.internal.getNumberOfPages());
-                doc.save(path);
-            }
-
-            download.onclick = () => {
-                canvases2pdf("tes2.pdf", viewer.getElementsByTagName("canvas"));
-                //canvas2pdf("test.pdf", canvas);
-            }
-
-            for (e of document.getElementById("figures").getElementsByClassName("figure")) {
-
-                e.ondragstart = function (event) {
-                    transfer = event.target.cloneNode(true);
-                    transfer.removeAttribute("draggable");
-                    transfer.classList.remove("copy-and-paste");
-                    transfer.classList.add("relocatable");
-                    transfer.classList.add("resizable");
-
-                    transfer.onmousedown = function (event) {
-                        let x = event.offsetX;
-                        let y = event.offsetY;
-
-                        if ((transfer.clientWidth - x) <= 17 && (transfer.clientHeight - y) <= 17) return;
-
-                        transfer.classList.add("relocatable");
-
-                        viewer.onmousemove = function (event) {
-                            //let element = document.getElementsByClassName("relocatable")[0];
-                            event.preventDefault();
-
-                            transfer.style.top = viewer.scrollTop + event.clientY - viewer.offsetTop - y + "px";
-                            transfer.style.left = viewer.scrollLeft + event.clientX - viewer.offsetLeft - x + "px";
-                        }
-
-                        transfer.onmouseup = function (event) {
-                            viewer.onmousemove = null;
-                            transfer.onmouseup = null;
-                        }
-                    }
-                }
-            }
-
-            for (e of viewer.getElementsByTagName("div")) {
-
-                e.onmousedown = function (event) {
-                    let x = event.offsetX;
-                    let y = event.offsetY;
-
-                    if ((e.clientWidth - x) <= 17 && (e.clientHeight - y) <= 17) return;
-
-                    e.classList.add("relocatable");
-
-                    viewer.onmousemove = function (event) {
-                        //let element = document.getElementsByClassName("relocatable")[0];
-                        event.preventDefault();
-
-                        e.style.top = viewer.scrollTop + event.clientY - viewer.offsetTop - y + "px";
-                        e.style.left = viewer.scrollLeft + event.clientX - viewer.offsetLeft - x + "px";
-                        /*e.style.top = event.offsetY + "px";
-                        e.style.left = event.offsetX + "px";*/
-                    }
-
-                    e.onmouseup = (event) => {
-                        viewer.onmousemove = null;
-                        e.onmouseup = null;
-                    }
-                }
-            }
-
-            viewer.ondragover = (event) => {
-                event.preventDefault();
-            }
-
-            viewer.ondrop = (event) => {
-
-                let x = event.clientX;
-                let y = event.clientY;
-
-                transfer.style.top = viewer.scrollTop + y - viewer.offsetTop + "px";
-                transfer.style.left = x - viewer.offsetLeft + "px";
-                viewer.prepend(transfer);
-            }
-
-            viewer.onscroll = () => {
-                //console.log(viewer.scrollTop);
-            }
-        }
-
-        //context.fillRect(25, 125, 50, 50);
-    </script>
+    <script src="index.js"></script>
 </body>
 
 <!--
