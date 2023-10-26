@@ -5,6 +5,7 @@ WORKDIR /usr/src/app
 # package.json: node.js周りの依存関係が記述されている
 COPY package*.json ./
 RUN npm install
+RUN npm install -g nodemon
 # アプリケーションのソースをバンドル
 COPY . .
 EXPOSE 8080
