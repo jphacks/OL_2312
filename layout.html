@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <style>
+        * {
+            margin: 0;
+        }
+        body {
+            display: flex;
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+        }
+        nav {
+            width: 200px;
+            border-right: 1px solid black;
+        }
+        ul {
+            list-style-type: none;
+        }
+        header {
+            width: 100%;
+            background-color: white;
+            display:flex;
+            justify-content: center;
+        }
+        .contents {
+            display: flex;
+        }
+        .content {
+            height: 100vh;
+            overflow-y: auto;
+        }
+        #pdf-view {
+            display:flex;
+            justify-content: center;
+        }
+     </style>
+</head>
+
+<body>
+    <nav>
+        <h1>ドキュメント</h1>
+        <ul>
+            <li>sample1</li>
+            <li>sample2</li>
+            <li>sample3</li>
+            <li>sample4</li>
+            <li>sample5</li>
+            <li>sample6</li>
+        </ul>
+    </nav>
+    <div style="width: 100%">
+        <header>
+            <button>↧</button>
+            <button>↥</button>
+        </header>
+        <main>
+            <div class="container">
+                <div class="contents">
+                    <div class="content" id="figures" style="width: 15%;">
+                        <ul style="padding-left: 1px;">
+                            <li><img src="https://placehold.jp/100x100.png"/></li>
+                            <li><img src="https://placehold.jp/100x100.png"/></li>
+                            <li><img src="https://placehold.jp/100x100.png"/></li>
+                            <li><img src="https://placehold.jp/100x100.png"/></li>
+                            <li><img src="https://placehold.jp/100x100.png"/></li>
+                            <li><img src="https://placehold.jp/100x100.png"/></li>
+                            <li><img src="https://placehold.jp/100x100.png"/></li>
+                            <li><img src="https://placehold.jp/100x100.png"/></li>
+                            <li><img src="https://placehold.jp/100x100.png"/></li>
+                            <li><img src="https://placehold.jp/100x100.png"/></li>
+                        </ul>
+                    </div>
+                    <div class="content" style="width: 85%">
+                        <div id="pdf-view">
+                            <img src="https://placehold.jp/800x2000.png"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script>
+        window.addEventListener("load", (event) => {
+            document.querySelector("#pdf-view").addEventListener("scroll", function(event) {
+ 
+            });
+        });
+    </script>
+</body>
+
+</html>
