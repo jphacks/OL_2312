@@ -3,6 +3,9 @@ window.onload = () => {
     let canvases = [];
     let contexts = [];
 
+    let currFilename = "";
+    let imagesDict = {};
+
     const scale = 3;
 
     document.onmousedown = (event) => {
@@ -100,7 +103,6 @@ window.onload = () => {
         this.append(div);
 
         event.dataTransfer.clearData();
-
     }, false);
 
     //const url = "https://arxiv.org/pdf/1706.03762.pdf";
@@ -150,6 +152,7 @@ window.onload = () => {
                 let li = document.createElement("li");
                 let a = htmlToElement(`<a href="${url}">${filename}</a>`);
                 a.onclick = (event) => {
+                    currFilename = filename;
                     setPDF(a.href);
                     return false;
                 }
@@ -157,7 +160,6 @@ window.onload = () => {
                 document.querySelector("#pdfs").append(li);
             }
         })();
-
     });
 
     function setPDF(url) {
@@ -244,6 +246,21 @@ window.onload = () => {
         }
         canvases2pdf("hoge.pdf", canvases);
         //canvas2pdf("test.pdf", canvas);
+    }
+
+    document.querySelector("#save").onclick = () => {
+        const form = document.querySelector("#edit-data");
+        const editData = {};
+        editData[currFilename] = [];
+        console.log(editData);
+        document.querySelector("#pdf-viewer").querySelectorAll(".img-wrapper").forEach(e => {
+            editData[currFilename].push(e.outerHTML);
+        });
+
+        form.querySelector("input[name='edit-data']").value = JSON.stringify(editData);
+        console.log(form.querySelector("input[name='edit-data']").value );
+        form.submit();
+        return false;
     }
 
     function htmlToElement(html) {

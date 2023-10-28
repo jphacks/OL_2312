@@ -82,3 +82,10 @@ app.post("/pdf-upload", multer({storage: pdfStorage}).single("pdf"), function(re
     console.log("failed");
   }
 });
+
+app.post("/edit-data", function(req, res) {
+  const data = JSON.parse(req.body["edit-data"]);
+  const filename = Object.keys(data)[0];
+  const htmls = Object.values(data)[0];
+  fs.writeFileSync(`./edit_data/${filename}.txt`, htmls.join('\n'));
+}); 

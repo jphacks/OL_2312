@@ -172,7 +172,11 @@
         <div id="pdf-viewer">
             <!--<div class="resizable"><img src="fig1.png"></div>-->
         </div>
-        <button id="download">save</button>
+        <form method="post" action="/edit-data" id="edit-data">
+            <input type="hidden" name="edit-data" value="">
+            <input type="button" id="save" value="編集を保存">
+        </form>
+        <button id="download">ダウンロード</button>
         <form method="post" enctype="multipart/form-data" action="/pdf-upload" id="pdf-form">
             <input type="file" id="upload" name="pdf" accept="application/pdf" />
             <input type="button" id="submit" value="保存" />
