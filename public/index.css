@@ -9,6 +9,7 @@ body {
 }
 #pdf-div {
   flex: 3;
+  overflow: scroll;
 }
 #shotting-div {
   flex: 1;
