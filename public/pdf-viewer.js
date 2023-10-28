@@ -4,7 +4,6 @@ window.onload = () => {
     let contexts = [];
 
     let currFilename = "";
-    let imagesDict = {};
 
     const scale = 3;
 
@@ -120,7 +119,6 @@ window.onload = () => {
             body: data,
         }
         fetch(action, options).then(res => {
-            console.log(res);
             return res.arrayBuffer();
         }).then(buffer => {
             console.log(buffer);
@@ -144,16 +142,91 @@ window.onload = () => {
         return res.text();
     }).then(data => {
         (async () => {
-            for (filename of data.split(",")) {
+            for (_filename of data.split(",")) {
+                const filename = _filename; // 下の行でなぜか値が変わるのでここ
                 const res = await fetch("/pdf-list");
                 const buffer = await res.arrayBuffer();
                 const url = await URL.createObjectURL(new Blob([buffer], { type: "application/pdf" }));
-
                 let li = document.createElement("li");
+                //let a = document.createElement("a");
+                //a.setAttribute("href", url);
                 let a = htmlToElement(`<a href="${url}">${filename}</a>`);
                 a.onclick = (event) => {
                     currFilename = filename;
                     setPDF(a.href);
+                    fetch(`/edit-data/${filename}`, { method: "get" }).then(res => {
+                        return res.text();
+                    }).then(data => {
+                        (async()=>{
+                            for await(html of data.split("\n")) {
+                            let viewer = document.querySelector("#pdf-viewer");
+
+                            const res = await fetch(`/get-clip/${filename}`);
+                            const buffer = await res.arrayBuffer();
+                            const url = URL.createObjectURL(new Blob([buffer], { type: "image/png" }));
+
+                            let div = htmlToElement(html);
+                            let img = div.lastChild;
+
+                            img.setAttribute("draggable", "false");
+
+                            img.href = url;
+
+
+                            div.onmouseenter = (event) => {
+                                div.classList.add("hover");
+                            }
+
+                            div.onmouseleave = (event) => {
+                                div.classList.remove("hover");
+                            }
+
+                            img.oncontextmenu = (event) => {
+                                return false;
+                            }
+
+                            img.onmousedown = (event) => {
+
+                                if (!div.classList.contains("selected")) {
+                                    div.classList.add("selected");
+                                }
+
+                                if (event.button == 0) {
+                                    let offsetX = event.offsetX;
+                                    let offsetY = event.offsetY;
+
+                                    //div.style.transform = `rotate(30deg)`;
+
+                                    viewer.onmousemove = (event) => {
+                                        event.preventDefault();
+                                        div.style.top = viewer.scrollTop + event.clientY - viewer.offsetTop - offsetY + "px";
+                                        div.style.left = viewer.scrollLeft + event.clientX - viewer.offsetLeft - offsetX + "px";
+                                    }
+
+                                    img.onmouseup = (event) => {
+                                        viewer.onmousemove = null;
+                                    }
+
+                                } else if (event.button == 2) {
+                                    let angle = 0;
+
+                                    let m = parseInt(div.style.transform.match(/[0-9]+/g));
+                                    if (m) angle = Number(m);
+
+                                    console.log(angle);
+
+                                    div.style.transform = `rotate(${angle + 10}deg)`;
+                                    console.log(div.style.transform);
+                                }
+                            }
+
+                            img.ondblclick = (event) => {
+                                div.remove();
+                            }
+
+                            viewer.append(div);
+                        }})();
+                    });
                     return false;
                 }
                 li.append(a);
@@ -258,7 +331,7 @@ window.onload = () => {
         });
 
         form.querySelector("input[name='edit-data']").value = JSON.stringify(editData);
-        console.log(form.querySelector("input[name='edit-data']").value );
+        console.log(form.querySelector("input[name='edit-data']").value);
         form.submit();
         return false;
     }

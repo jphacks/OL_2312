@@ -65,7 +65,11 @@ app.get('/get-clip/:filename', (req, res) => {
   let filename = req.params.filename;
   let filedir = path.join(__dirname, "upload");
   let filepath = path.join(filedir, filename);
-  res.sendFile(filepath);
+  res.sendFile(filepath, {
+    headers: {
+      "Content-Disposition": `attachment; filename="${filename}`,
+    }
+  });
 });
 
 app.listen(PORT, HOST, () => {
@@ -112,4 +116,12 @@ app.post("/edit-data", function(req, res) {
   const filename = Object.keys(data)[0];
   const htmls = Object.values(data)[0];
   fs.writeFileSync(`./edit_data/${filename}.txt`, htmls.join('\n'));
-}); 
+});
+
+app.get("/edit-data/:filename", function(req, res) {
+  let filename = req.params.filename;
+  let filedir = path.join(__dirname, "./edit_data");
+  let filepath = path.join(filedir, filename+".txt");
+  const htmls = fs.readFileSync(filepath, 'utf8');
+  res.send(htmls);
+})

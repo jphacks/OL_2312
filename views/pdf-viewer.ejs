@@ -119,14 +119,14 @@
                         return res.text();
                     }).then(data => {
                         (async () => {
-                            for (filename of data.split(",")) {
+                            for (_filename of data.split(",")) {
+                                const filename = _filename;
                                 const res = await fetch(`/get-clip/${filename}`);
                                 const buffer = await res.arrayBuffer();
                                 const url = await URL.createObjectURL(new Blob([buffer], { type: "image/png" }));
-                                figures.innerHTML += `<img src="${url}">`;
+                                figures.innerHTML += `<img src="${url}" name="${filename}">`;
                             }
                         })();
-
                     });
                     // fetch("/clip")
                     // .then((res) => {
