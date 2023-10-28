@@ -127,7 +127,8 @@
                     console.log("hello");
                     const blob = new Blob([buffer], {type: "image/png"});
                     let url = URL.createObjectURL(blob); 
-                    figures.innerHTML += `<div class="figure" draggable="true"><img src="${url}" draggable="false"></div>`;
+                    //figures.innerHTML += `<div class="figure" draggable="true"><img src="${url}" draggable="false"></div>`;
+                    figures.innerHTML += `<img src="${url}">`;
                 })
                 .catch((err) => {
                     console.log(err);

@@ -26,5 +26,6 @@ h1{
 }
 #result-div{
     display: flex;
+    flex-flow: column;
     justify-content: center;
 }

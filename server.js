@@ -22,8 +22,14 @@ app.use(bodyParser.urlencoded({
 
 app.use(express.static('public'));
 app.get('/', (req, res) => {
+  //res.render("shotting.ejs");
+  res.render("top.ejs");
+});
+
+app.get('/shotting', (req, res) => {
   res.render("shotting.ejs");
 });
+
 app.post('/index', multer({dest: "./upload"}).single("clip"), (req, res) => {
   // ここで blob が bufferになって保存される
   clipBlobPath = req.file.path;

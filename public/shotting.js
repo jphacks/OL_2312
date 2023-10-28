@@ -9,7 +9,9 @@ window.onload = () => {
 
   const video = document.querySelector("#camera");
   const clippingFrame = document.querySelector("#clipping-frame");
-  const canvas = document.querySelector("#picture");
+  const orgClip = document.querySelector("#org-clip");
+  const editedClip = document.querySelector("#edited-clip");
+
   const downloadLink = document.querySelector("#download-link");
   const downloadButton = document.querySelector("#download-button");
 
@@ -20,8 +22,10 @@ window.onload = () => {
   clippingFrame.style.height = String(clipHeight) + "px";
   clippingFrame.style.top = String(cameraHeight / 2) + "px";
   clippingFrame.style.left = String(cameraWidth / 2) + "px";
-  canvas.style.width = String(clipWidth) + "px";
-  canvas.style.height = String(clipHeight) + "px";
+  orgClip.style.width = String(clipWidth) + "px";
+  orgClip.style.height = String(clipHeight) + "px";
+  editedClip.style.width = orgClip.style.width;
+  editedClip.style.height = orgClip.style.height;
 
   /** カメラ設定 */
   const constraints = {
@@ -49,17 +53,16 @@ window.onload = () => {
       // 失敗
       console.log(err.name + ": " + err.message);
     });
-
+  
   // shutter button
   document.querySelector("#shutter").addEventListener("click", () => {
-    const ctx = canvas.getContext("2d");
-
+    const ctx = orgClip.getContext("2d");
     video.pause(); // 映像を停止
     setTimeout(() => {
       video.play(); // 0.5秒後にカメラ再開
     }, 500);
 
-    // canvasに画像を貼り付ける
+    // orgClipに画像を貼り付ける
     //ctx.drawImage(video, 0, 0, 640, 480);
     // ctx.drawImage(video, 0, 0, cameraWidth, cameraHeight);
     ctx.drawImage(
@@ -77,11 +80,20 @@ window.onload = () => {
 
     // ダウンロードリンクのhref属性にデータURLを設定
     // downloadButton.disabled = null;
-    // downloadLink.href = canvas.toDataURL("image/png");
+    // downloadLink.href = orgClip.toDataURL("image/png");
+
+    let src = cv.imread('org-clip');
+    let dst = new cv.Mat();
+    let M = cv.Mat.ones(3, 3, cv.CV_8U);
+    cv.Canny(src, dst, 50, 100, 3, false);
+    cv.morphologyEx(dst, dst, cv.MORPH_CLOSE, M);
+    cv.imshow('edited-clip', dst);
+    src.delete();
+    dst.delete();
   });
 
   document.querySelector("#btn-submit").addEventListener("click", () => {
-    document.querySelector("#picture").toBlob(
+    document.querySelector("#edited-clip").toBlob(
       (blob) => {
         var formData = new FormData();
         formData.append("clip", blob);
@@ -89,7 +101,12 @@ window.onload = () => {
           method: "POST",
           body: formData
         }).then((res) => {
-          window.location.href = res.url;
+          if(window.parent != window){ // iframe内にいた場合
+            let parentDoc = parent.document;
+            console.log(parentDoc);
+            parentDoc.querySelector("#pdf-frame").contentWindow.location.reload();
+          }
+          // window.location.href = res.url;
         }).catch((err) => {
           alert(err);
         });
@@ -97,23 +114,3 @@ window.onload = () => {
     );
   });
 };
-
-function sendServer(url, param) {
-  fetch(url, param)
-    .then((response) => {
-      return response.json();
-    })
-    .then((json) => {
-      if (json.status) {
-        alert("送信に『成功』しました");
-        setImage(json.result); //json.resultにはファイル名が入っている
-      } else {
-        alert("送信に『失敗』しました");
-        console.log(`[error1] ${json.result}`);
-      }
-    })
-    .catch((error) => {
-      alert("送信に『失敗』しました");
-      console.log(`[error2] ${error}`);
-    });
-}
