@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>写真の撮影</title>
+    <link rel="stylesheet" href="shotting.css" type="text/css">
+    <script src="opencv.js" type="text/javascript"></script>
+  </head>
+  <body>
+    <img id="image" src="figures/original.JPG"/>
+    <div id="canvases"></div>
+    <div class="container">
+      <div class="camera-side">
+        <div id="camera-div">
+          <video id="camera" width="640px" height="480px"></video>
+          <div id="clipping-frame"></div>
+        </div>
+      </div>
+      <div class="result-side">
+        <h1>撮影した画像</h1>
+        <div id="result-div">
+          <canvas id="org-clip"></canvas>
+          <canvas id="edited-clip"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <button id="shutter">shutter</button>
+    <button id="btn-submit">submit</button>
+    <script src="shotting.js"></script>
+  </body>
+</html>

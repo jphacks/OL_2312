@@ -1,0 +1,16 @@
+version: '3.7'
+
+services:
+  # 開発
+  app:
+    build: 
+      context: . # dockerfileがあるdir
+      dockerfile: ./Dockerfile
+    ports:
+      - '8080:8080'
+    init: true
+    volumes:
+      - 'node_modules:/usr/src/app/node_modules'
+
+volumes:
+  node_modules:
