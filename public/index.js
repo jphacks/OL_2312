@@ -1,7 +1,7 @@
 window.onload = () => {
 
-    const canvases = [];
-    const contexts = [];
+    let canvases = [];
+    let contexts = [];
 
     const scale = 3;
 
@@ -12,6 +12,14 @@ window.onload = () => {
             }
         });
     }
+
+    document.querySelectorAll("a").forEach(e => {
+        console.log(e);
+        e.onclick = (event) => {
+            setPDF(e.href);
+            return false;
+        }
+    });
 
     document.querySelectorAll("#figures img").forEach((e) => {
         e.ondragstart = (event) => {
@@ -82,7 +90,11 @@ window.onload = () => {
             }
         }
 
-        div.style.top = this.scrollTop + event.clientY - this.offsetTop - Number(event.dataTransfer.getData("offsetY")) + "px";
+        img.ondblclick = (event) => {
+            div.remove();
+        }
+
+        div.style.top = this.scrollTop + event.clientY - this.offsetTop - (event.dataTransfer.getData("offsetY")) + "px";
         div.style.left = this.scrollLeft + event.clientX - this.offsetLeft - Number(event.dataTransfer.getData("offsetX")) + "px";
 
         this.append(div);
@@ -91,30 +103,90 @@ window.onload = () => {
 
     }, false);
 
-    const url = "https://arxiv.org/pdf/1706.03762.pdf";
+    //const url = "https://arxiv.org/pdf/1706.03762.pdf";
 
-    pdfjsLib.getDocument(url).promise.then((pdf) => {
-        // ページの順番を保つために同期
+    document.querySelector("#upload").addEventListener("change", function (event) {
+        console.log(this.files[0]);
+    });
+
+    document.querySelector("#submit").addEventListener("click", (event) => {
+        const form = document.querySelector("#pdf-form");
+        const data = new FormData(form);
+        const action = form.getAttribute("action");
+        const options = {
+            method: "post",
+            body: data,
+        }
+        fetch(action, options).then(res => {
+            console.log(res);
+            return res.arrayBuffer();
+        }).then(buffer => {
+            console.log(buffer);
+            const url = URL.createObjectURL(new Blob([buffer], { type: "application/pdf" }));
+            let li = document.createElement("li");
+            let a = htmlToElement(`<a href="${url}">${document.querySelector("#upload").files[0].name}</a>`);
+            a.onclick = (event) => {
+                setPDF(a.href);
+                return false;
+            }
+            li.append(a);
+            document.querySelector("#pdfs").append(li);
+        });
+    })
+
+    let pdfs = document.getElementById("pdfs");
+
+    let i = 0;
+
+    fetch("/pdf-list-names").then(res => {
+        return res.text();
+    }).then(data => {
         (async () => {
-            for await (i of [...Array(pdf.numPages + 1).keys()].slice(1)) {
-                await pdf.getPage(i).then((page) => {
-                    let viewport = page.getViewport({ scale: scale });
-                    let canvas = document.createElement("canvas");
-                    let context = canvas.getContext("2d", { willReadFrequently: true });
-                    canvas.width = viewport.width;
-                    canvas.height = viewport.height;
-                    canvas.setAttribute("id", i);
-                    document.querySelector("#pdf-viewer").appendChild(canvas);
-                    page.render({
-                        canvasContext: context,
-                        viewport: viewport
-                    });
-                    canvases.push(canvas);
-                    contexts.push(context);
-                });
+            for (filename of data.split(",")) {
+                const res = await fetch("/pdf-list");
+                const buffer = await res.arrayBuffer();
+                const url = await URL.createObjectURL(new Blob([buffer], { type: "application/pdf" }));
+
+                let li = document.createElement("li");
+                let a = htmlToElement(`<a href="${url}">${filename}</a>`);
+                a.onclick = (event) => {
+                    setPDF(a.href);
+                    return false;
+                }
+                li.append(a);
+                document.querySelector("#pdfs").append(li);
             }
         })();
+
     });
+
+    function setPDF(url) {
+        document.querySelector("#pdf-viewer").innerHTML = "";
+        canvases = [];
+        contexts = [];
+        pdfjsLib.getDocument(url).promise.then((pdf) => {
+            // ページの順番を保つために同期
+            (async () => {
+                for await (i of [...Array(pdf.numPages + 1).keys()].slice(1)) {
+                    await pdf.getPage(i).then((page) => {
+                        let viewport = page.getViewport({ scale: scale });
+                        let canvas = document.createElement("canvas");
+                        let context = canvas.getContext("2d", { willReadFrequently: true });
+                        canvas.width = viewport.width;
+                        canvas.height = viewport.height;
+                        canvas.setAttribute("id", i);
+                        document.querySelector("#pdf-viewer").appendChild(canvas);
+                        page.render({
+                            canvasContext: context,
+                            viewport: viewport
+                        });
+                        canvases.push(canvas);
+                        contexts.push(context);
+                    });
+                }
+            })();
+        });
+    }
 
     function canvases2pdf(path, canvases) {
         let doc = new jspdf.jsPDF();
@@ -161,13 +233,13 @@ window.onload = () => {
     document.getElementById("download").onclick = () => {
         let images = document.querySelectorAll(".img-wrapper img");
 
-        for(let i = 0; i < canvases.length; i++) {
+        for (let i = 0; i < canvases.length; i++) {
             let canvasRect = canvases[i].getBoundingClientRect();
-            for(let j = 0; j < images.length; j++) {
+            for (let j = 0; j < images.length; j++) {
                 let imageRect = images[j].getBoundingClientRect();
-                if(canvasRect.left < imageRect.right && imageRect.left < canvasRect.right && canvasRect.top < imageRect.bottom && imageRect.top < canvasRect.bottom) {
+                if (canvasRect.left < imageRect.right && imageRect.left < canvasRect.right && canvasRect.top < imageRect.bottom && imageRect.top < canvasRect.bottom) {
                     contexts[i].drawImage(images[j], (imageRect.left - canvasRect.left) * scale, (imageRect.top - canvasRect.top) * scale, imageRect.width * scale, imageRect.height * scale);
-                } 
+                }
             }
         }
         canvases2pdf("hoge.pdf", canvases);
