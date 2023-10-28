@@ -1,19 +1,22 @@
 @charset "utf-8";
 .container{
-    display: flex;
+    width: 100%;
+    /* display: flex; */
 }
 .camera-side{
-    flex: 1;
+    /* flex: 1; */
     border: solid;
-    display: flex;
-    justify-content: center;
+    width: fit-content;
+    /* display: flex; */
+    /* justify-content: center; */
 }
 #camera-div{
     position: relative;
 }
 .result-side{
-    flex: 1;
+    /* flex: 1; */
     border: solid;
+    width: fit-content;
 }
 #clipping-frame{
     position: absolute;
@@ -24,8 +27,12 @@
 h1{
     margin: 10px;
 }
-#result-div{
+/* #result-div{
     display: flex;
     flex-flow: column;
     justify-content: center;
+} */
+#org-clip{
+    overflow: hidden;
+    display: block;
 }

@@ -65,11 +65,7 @@ app.get("/pdf-list", (req, res) => {
   });
 });
 
-app.get("/reset", (req, res) => {
-  i = 0;
-});
-
-const pdfStrage = multer.diskStorage({
+const pdfStorage = multer.diskStorage({
   destination: function(req, file, cb) {
     cb(null, "./uploads");
   },
@@ -78,11 +74,11 @@ const pdfStrage = multer.diskStorage({
   }
 });
 
-app.post("/pdf-upload", multer({storage: pdfStrage}).single("pdf"), function(req, res) {
+app.post("/pdf-upload", multer({storage: pdfStorage}).single("pdf"), function(req, res) {
   if(req.file) {
     console.log(req.file.path);
     res.sendFile(path.join(__dirname, req.file.path));
   } else {
-    console.log("faild");
+    console.log("failed");
   }
 });

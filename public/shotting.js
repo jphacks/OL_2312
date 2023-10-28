@@ -1,8 +1,8 @@
 window.onload = () => {
-  const cameraWidth = 640;
+  const cameraWidth = 400;
   const cameraHeight = 480;
-  const clipWidth = cameraWidth / 2;
-  const clipHeight = cameraHeight / 2;
+  const clipWidth = cameraWidth;//cameraWidth / 2;
+  const clipHeight = cameraHeight;//cameraHeight / 2;
   // (x, y) coordinate of left-top of clipping frame
   const clipX = cameraWidth / 2 - clipWidth / 2;
   const clipY = cameraHeight / 2 - clipHeight / 2;
@@ -19,14 +19,14 @@ window.onload = () => {
   var contexts;// = new Array(contours.size());
 
   // htmlの書き換え
-  video.style.width = String(cameraWidth);
-  video.style.height = String(cameraHeight);
+  video.style.width = String(cameraWidth)+"px";
+  video.style.height = String(cameraHeight)+"px";
   clippingFrame.style.width = String(clipWidth) + "px";
   clippingFrame.style.height = String(clipHeight) + "px";
-  clippingFrame.style.top = String(cameraHeight / 2) + "px";
-  clippingFrame.style.left = String(cameraWidth / 2) + "px";
-  orgClip.style.width = String(clipWidth) + "px";
-  orgClip.style.height = String(clipHeight) + "px";
+  clippingFrame.style.top = String(cameraHeight/2) + "px";
+  clippingFrame.style.left = String(cameraWidth/2) + "px";
+  orgClip.width = clipWidth; //String(clipWidth) + "px";
+  orgClip.height = clipHeight; //String(clipHeight) + "px";
   editedClip.style.width = orgClip.style.width;
   editedClip.style.height = orgClip.style.height;
 
@@ -65,6 +65,11 @@ window.onload = () => {
       video.play(); // 0.5秒後にカメラ再開
     }, 500);
 
+    console.log("clipX", clipX);
+    console.log("clipY", clipY);
+    console.log("clipWidth", clipWidth);
+    console.log("clipHeight", clipHeight);
+    
     // orgClipに画像を貼り付ける
     //ctx.drawImage(video, 0, 0, 640, 480);
     // ctx.drawImage(video, 0, 0, cameraWidth, cameraHeight);
@@ -190,7 +195,7 @@ window.onload = () => {
           if (window.parent != window) { // iframe内にいた場合
             let parentDoc = parent.document;
             console.log(parentDoc);
-            parentDoc.querySelector("#pdf-frame").contentWindow.location.reload();
+            parentDoc.querySelector("#pdf-frame").contentWindow.getLatestClip();
           }
           // window.location.href = res.url;
         }).catch((err) => {
