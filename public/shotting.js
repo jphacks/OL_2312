@@ -11,6 +11,7 @@ window.onload = () => {
   const clippingFrame = document.querySelector("#clipping-frame");
   const orgClip = document.querySelector("#org-clip");
   const editedClip = document.querySelector("#edited-clip");
+  var canvases;
 
   const downloadLink = document.querySelector("#download-link");
   const downloadButton = document.querySelector("#download-button");
@@ -184,7 +185,36 @@ window.onload = () => {
   //423;
 
   document.querySelector("#btn-submit").addEventListener("click", () => {
-    /*document.querySelector("#edited-clip")*/canvases[0].toBlob(
+    var formData = new FormData();
+    
+    let promises = canvases.map((canvas) => {
+      return new Promise((resolve, reject) => {
+        canvas.toBlob((blob) => {
+          resolve(blob);
+        });
+      });
+    });
+
+    Promise.all(promises).then((blobs) => {
+      // formData.append("clips", blobs);
+      // for (const key of formData.keys()) {
+      //   console.log(key);
+      // }
+      blobs.forEach((blob) => { formData.append("clips", blob); });
+      fetch("/post-clips", {
+        method: "POST",
+        body: formData
+      }).then(() => {
+        if(window.parent != window){ // iframe内にいた場合
+          let parentDoc = parent.document;
+          console.log(parentDoc);
+          parentDoc.querySelector("#pdf-frame").contentWindow.loadImages();
+        }
+      });
+    })
+    
+    /*
+    document.querySelector("#edited-clip").toBlob(
       (blob) => {
         var formData = new FormData();
         formData.append("clip", blob);
@@ -203,5 +233,6 @@ window.onload = () => {
         });
       }
     );
+    */
   });
 };

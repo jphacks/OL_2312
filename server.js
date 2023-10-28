@@ -39,11 +39,35 @@ app.post('/pdf-viewer', multer({dest: "./upload"}).single("clip"), (req, res) =>
 app.get('/pdf-viewer', (req, res) => {
   res.render("pdf-viewer.ejs");
 });
+
+/*
 app.get('/clip', (req, res) => {
   // console.log(fs.readFileSync(clipBlobPath));
   // res.send(fs.readFileSync(clipBlobPath));
   res.sendFile(path.join(__dirname, clipBlobPath));
 });
+*/
+
+app.post('/post-clips', multer({dest: "./upload"}).array("clips"), (req, res) => {
+  res.send();
+  // console.log(fs.readFileSync(clipBlobPath));
+  // res.send(fs.readFileSync(clipBlobPath));
+  // res.sendFile(path.join(__dirname, clipBlobPath));
+});
+
+app.get('/get-clip-names', (req, res) => {
+  fs.readdir("./upload", (err, files) => {
+    res.send(files.join());
+  });
+});
+
+app.get('/get-clip/:filename', (req, res) => {
+  let filename = req.params.filename;
+  let filedir = path.join(__dirname, "upload");
+  let filepath = path.join(filedir, filename);
+  res.sendFile(filepath);
+});
+
 app.listen(PORT, HOST, () => {
   console.log(`Running on http://${HOST}:${PORT}`);
 });

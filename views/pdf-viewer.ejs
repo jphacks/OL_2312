@@ -21,6 +21,7 @@
         #figures {
             display: flex;
             flex-direction: column;
+            overflow-y: scroll;
         }
 
         #pdf-viewer {
@@ -106,41 +107,54 @@
         <!-- <img id="test"> -->
         <div id="figures">
             <script>
-                function getLatestClip(){
-                    fetch("/clip")
-                    .then((res) => {
-                        return res.arrayBuffer();
-                    })
-                    .then((buffer) => {
-                        /*
-                        var bytes = new Uint8Array(buffer);
-                        // console.log(bytes);
-                        var binaryData = "";
-                        for (var i = 0, len = bytes.byteLength; i < len; i++) {
-                            binaryData += String.fromCharCode(bytes[i]);
-                        }
-                        let url = "data:image/png;base64," + window.btoa(binaryData);
-                        */
-                        const blob = new Blob([buffer], {type: "image/png"});
-                        let url = URL.createObjectURL(blob); 
-                        //figures.innerHTML += `<div class="figure" draggable="true"><img src="${url}" draggable="false"></div>`;
-                        figures.innerHTML += `<img src="${url}">`;
-                    })
-                    .catch((err) => {
-                        console.log(err);
-                    });
+                function removeExistingImages(){
+                    let images = document.getElementById("figures").getElementsByTagName("img");
+                    while(images.length > 0){
+                        images[0].parentNode.removeChild(images[0]);
+                    }
                 }
+
+                function loadClips(){
+                    fetch("/get-clip-names").then(res => {
+                        return res.text();
+                    }).then(data => {
+                        (async () => {
+                            for (filename of data.split(",")) {
+                                const res = await fetch(`/get-clip/${filename}`);
+                                const buffer = await res.arrayBuffer();
+                                const url = await URL.createObjectURL(new Blob([buffer], { type: "image/png" }));
+                                figures.innerHTML += `<img src="${url}">`;
+                            }
+                        })();
+
+                    });
+                    // fetch("/clip")
+                    // .then((res) => {
+                    //     return res.arrayBuffer();
+                    // })
+                    // .then((buffer) => {
+                    //     /*
+                    //     var bytes = new Uint8Array(buffer);
+                    //     // console.log(bytes);
+                    //     var binaryData = "";
+                    //     for (var i = 0, len = bytes.byteLength; i < len; i++) {
+                    //         binaryData += String.fromCharCode(bytes[i]);
+                    //     }
+                    //     let url = "data:image/png;base64," + window.btoa(binaryData);
+                    //     */
+                    //     const blob = new Blob([buffer], {type: "image/png"});
+                    //     let url = URL.createObjectURL(blob); 
+                    //     //figures.innerHTML += `<div class="figure" draggable="true"><img src="${url}" draggable="false"></div>`;
+                    //     figures.innerHTML += `<img src="${url}">`;
+                    // })
+                    // .catch((err) => {
+                    //     console.log(err);
+                    // });
+                }
+                
+                
 
                 let figures = document.getElementById("figures");
-
-                /*
-                function loadImage(url) {
-                    let xhr = new XMLHttpRequest();
-                    xhr.open("HEAD", url, false);
-                    xhr.send(null);
-                    return xhr.status;
-                }
-                */
 
                 function chk(url) {
                     return new Promise(function (resolve, reject) {
@@ -162,9 +176,14 @@
                             //console.log(i, "not found");
                         });
                 }
-                loadFigures(0);
 
-                getLatestClip();
+                function loadImages(){
+                    removeExistingImages();
+                    loadFigures(0);
+                    loadClips();
+                }
+                
+                loadImages();
             </script>
         </div>
     </div>
