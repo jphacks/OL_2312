@@ -18,6 +18,7 @@ window.onload = () => {
 
   var canvases;// = new Array(contours.size());
   var contexts;// = new Array(contours.size());
+  var minXList, minYList, maxXList, maxYList;
 
   // htmlの書き換え
   video.style.width = String(cameraWidth)+"px";
@@ -116,15 +117,16 @@ window.onload = () => {
       { x: 0, y: 0 }
     );
 
-    let minXList = new Array(contours.size());
-    let minYList = new Array(contours.size());
+    minXList = new Array(contours.size());
+    minYList = new Array(contours.size());
 
-    let maxXList = new Array(contours.size());
-    let maxYList = new Array(contours.size());
+    maxXList = new Array(contours.size());
+    maxYList = new Array(contours.size());
 
     canvases = new Array(contours.size());
     contexts = new Array(contours.size());
-
+    
+    const ctxEdited = document.querySelector("#edited-clip").getContext("2d");
     (async () => {
       for await (i of [...Array(contours.size()).keys()]) {
 
@@ -138,10 +140,10 @@ window.onload = () => {
           yList[j] = data[2 * j + 1];
         }
 
-        /*minXList[i] = Math.min(...xList);
+        minXList[i] = Math.min(...xList);
         minYList[i] = Math.min(...yList);
         maxXList[i] = Math.max(...xList);
-        maxYList[i] = Math.max(...yList);*/
+        maxYList[i] = Math.max(...yList);
 
         let x0 = Math.min(...xList);
         let y0 = Math.min(...yList);
@@ -150,8 +152,6 @@ window.onload = () => {
 
         let w = x1 - x0;
         let h = y1 - y0;
-
-        console.log(x0, y0, x1, y1);
 
         canvases[i] = document.createElement("canvas");
         canvases[i].setAttribute("id", i);
@@ -164,25 +164,52 @@ window.onload = () => {
         let context = canvas.getContext("2d");*/
 
         contexts[i] = await canvases[i].getContext("2d");
-
+        
         await contexts[i].drawImage(img, x0, y0, w, h, 0, 0, w, h);
+        
+        // let clip = document.createElement("div");
+        // clip.setAttribute("class", "clip");
+        // clip.setAttribute("clip-id", i);
+        // clip.style.top = `${x0}.px`;
+        // clip.style.left = `${y0}.px`;
+        // clip.style.width = `${w}.px`;
+        // clip.style.height = `${h}.px`;
+        // document.querySelector("#edited-clip").parentElement.append(clip);
         //document.querySelector("#canvases").append(canvas);
       }
     })().then(()=>{
-      for(canvas of canvases) {
-        document.querySelector("#canvases").append(canvas);
+      let includedCanvasIndices = new Set();
+      for(let i=0; i<canvases.length; i++){
+        for(let j=0; j<canvases.length; j++){
+          if(i==j) continue;
+          if(minXList[j] < minXList[i] && maxXList[i] < maxXList[j] 
+            && minYList[j] < minYList[i] && maxYList[i] < maxYList[j]){
+            includedCanvasIndices.add(i);
+            console.log(`(i, j)=(${i}, ${j})`);
+            break;
+          }
+        }
+      }
+      console.log(canvases.length);
+      console.log(Array.from(includedCanvasIndices).sort((a, b) => { return b-a; }));
+      for(let i of Array.from(includedCanvasIndices).sort((a, b) => { return b-a; })){
+        canvases.splice(i, 1);
+        minXList.splice(i, 1);
+        minYList.splice(i, 1);
+        maxXList.splice(i, 1);
+        maxYList.splice(i, 1);
+      }
+      console.log(canvases.length);
+
+      for(let i=0; i<canvases.length; i++){
+        ctxEdited.beginPath();
+        ctxEdited.rect(minXList[i], minYList[i], maxXList[i]-minXList[i], maxYList[i]-minYList[i]);
+        ctxEdited.strokeStyle = 'deepskyblue';
+        ctxEdited.lineWidth = 4;
+        ctxEdited.stroke();
       }
     });
-    
-    //console.log(canvases[20].width, canvases[20].height);
-    /*let src = cv.imread("figures/sample.jpg");
-    src = cv.cvtColor(src, cv.COLOR_BGR2RGB);
-    gray = cv.cvtColor(src, cv.COLOR_BGR2GRAY);
-    dx = cv.Sobel(gray, cv.CV_8U, 1, 0);
-    dy = cv.Sobel(gray, cv.CV_8U, 0, 1);*/
   });
-
-  //423;
 
   document.querySelector("#btn-submit").addEventListener("click", () => {
     var formData = new FormData();
