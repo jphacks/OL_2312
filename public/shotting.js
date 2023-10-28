@@ -97,7 +97,7 @@ window.onload = () => {
       (blob) => {
         var formData = new FormData();
         formData.append("clip", blob);
-        fetch("/index", {
+        fetch("/pdf-viewer", {
           method: "POST",
           body: formData
         }).then((res) => {

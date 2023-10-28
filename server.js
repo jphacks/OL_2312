@@ -21,23 +21,23 @@ app.use(bodyParser.urlencoded({
 //app.use(express.json());
 
 app.use(express.static('public'));
-app.get('/', (req, res) => {
+app.get('/index', (req, res) => {
   //res.render("shotting.ejs");
-  res.render("top.ejs");
+  res.render("index.ejs");
 });
 
 app.get('/shotting', (req, res) => {
   res.render("shotting.ejs");
 });
 
-app.post('/index', multer({dest: "./upload"}).single("clip"), (req, res) => {
+app.post('/pdf-viewer', multer({dest: "./upload"}).single("clip"), (req, res) => {
   // ここで blob が bufferになって保存される
   clipBlobPath = req.file.path;
   res.send();
 });
 
-app.get('/index', (req, res) => {
-  res.render("index.ejs");
+app.get('/pdf-viewer', (req, res) => {
+  res.render("pdf-viewer.ejs");
 });
 app.get('/clip', (req, res) => {
   // console.log(fs.readFileSync(clipBlobPath));
