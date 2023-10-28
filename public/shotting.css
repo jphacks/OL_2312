@@ -36,3 +36,9 @@ h1{
     overflow: hidden;
     display: block;
 }
+
+div.clip{
+    position: absolute;
+    border: blue 5px;
+    border-color: black;
+}
