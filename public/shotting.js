@@ -1,5 +1,5 @@
 window.onload = () => {
-  const cameraWidth = 400;
+  const cameraWidth = parent.document.querySelector("#shotting-div").clientWidth * 0.9;
   const cameraHeight = 480;
   const clipWidth = cameraWidth;//cameraWidth / 2;
   const clipHeight = cameraHeight;//cameraHeight / 2;
@@ -125,7 +125,7 @@ window.onload = () => {
     //let canvas = document.querySelector("#canvas");
     //let context = canvas.getContext("2d");
 
-    let src = cv.imread("image");
+    let src = cv.imread(orgClip);
     let dst = new cv.Mat();
     let M = cv.Mat.ones(15, 15, cv.CV_8U);
     cv.Canny(src, dst, 100, 200, 3, false);
@@ -188,7 +188,7 @@ window.onload = () => {
 
         contexts[i] = await canvases[i].getContext("2d");
         
-        await contexts[i].drawImage(img, x0, y0, w, h, 0, 0, w, h);
+        await contexts[i].drawImage(orgClip, x0, y0, w, h, 0, 0, w, h);
         
         // document.querySelector("#edited-clip").parentElement.append(canvases[i]);
       }
@@ -265,7 +265,7 @@ window.onload = () => {
       minYList[targetIndex] = y0;
       maxXList[targetIndex] = x1;
       maxYList[targetIndex] = y1;
-      contexts[targetIndex].drawImage(img, x0, y0, x1-x0, y1-y0, 0, 0, x1-x0, y1-y0);
+      contexts[targetIndex].drawImage(orgClip, x0, y0, x1-x0, y1-y0, 0, 0, x1-x0, y1-y0);
       drawClipFrame(x0, y0, x1-x0, y1-y0, "rgb(0, 0, 255)");
     }
     selectedCanvasIndices.clear();

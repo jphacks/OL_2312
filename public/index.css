@@ -8,11 +8,11 @@ body {
   overflow: hidden;
 }
 #pdf-div {
-  flex: 3;
+  flex: 5;
   overflow: scroll;
 }
 #shotting-div {
-  flex: 1;
+  flex: 2;
   height: 100vh;
 }
 iframe {

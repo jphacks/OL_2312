@@ -5,7 +5,7 @@
 }
 .camera-side{
     /* flex: 1; */
-    border: solid;
+    border: 1px solid black;
     width: fit-content;
     /* display: flex; */
     /* justify-content: center; */
@@ -20,7 +20,6 @@
 }
 #clipping-frame{
     position: absolute;
-    border: solid 5px;
     border-color: black;
     transform: translate(-50%, -50%);
 }

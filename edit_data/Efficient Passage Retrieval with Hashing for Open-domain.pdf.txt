@@ -1,4 +1,0 @@
-<div class="img-wrapper" style="top: 887px; left: 351px;"><img src="blob:http://localhost:8080/37db5d9e-b586-4b3c-97f1-75e19a852cff" name="7750eb502ba37574d61f4109a4de448a" draggable="false"></div>
-<div class="img-wrapper" style="top: 1030px; left: 259px;"><img src="blob:http://localhost:8080/7a00c888-eb92-49b1-a81b-2991eba6542a" name="cb471f034d90b6e66aa8d43529a62773" draggable="false"></div>
-<div class="img-wrapper" style="top: 2305px; left: 315px;"><img src="blob:http://localhost:8080/636354ca-4534-4606-8d21-ccd66d47391b" name="d9f7a3fb6e186fd12c0277b2f974bc73" draggable="false"></div>
-<div class="img-wrapper" style="top: 2259px; left: 295px;"><img src="blob:http://localhost:8080/6fada243-fe35-4f44-932a-3d256e45c83e" name="d382ceb070a3bcf1c40e1ab46243c5d9" draggable="false"></div>

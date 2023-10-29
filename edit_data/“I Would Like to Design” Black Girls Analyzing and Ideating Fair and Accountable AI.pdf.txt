@@ -1,6 +1,0 @@
-<div class="img-wrapper" style="top: 362.2px; left: 299px;"><img src="blob:http://localhost:8080/e698b6f4-558d-4428-98cd-e2ccbe6c5dc6" name="7750eb502ba37574d61f4109a4de448a" draggable="false"></div>
-<div class="img-wrapper" style="top: 2012.2px; left: 269px;"><img src="blob:http://localhost:8080/ffe2c149-f648-442b-810d-c73171895af5" name="5c10758656fa8a2ec107af77d45fab06" draggable="false"></div>
-<div class="img-wrapper" style="top: 4007.4px; left: 316px;"><img src="blob:http://localhost:8080/e698b6f4-558d-4428-98cd-e2ccbe6c5dc6" name="7750eb502ba37574d61f4109a4de448a" draggable="false"></div>
-<div class="img-wrapper" style="top: 6382.2px; left: 270px;"><img src="blob:http://localhost:8080/e698b6f4-558d-4428-98cd-e2ccbe6c5dc6" name="7750eb502ba37574d61f4109a4de448a" draggable="false"></div>
-<div class="img-wrapper" style="top: 8669px; left: 328px;"><img src="blob:http://localhost:8080/ffe2c149-f648-442b-810d-c73171895af5" name="5c10758656fa8a2ec107af77d45fab06" draggable="false"></div>
-<div class="img-wrapper" style="top: 10342px; left: 271px;"><img src="blob:http://localhost:8080/e698b6f4-558d-4428-98cd-e2ccbe6c5dc6" name="7750eb502ba37574d61f4109a4de448a" draggable="false"></div>
