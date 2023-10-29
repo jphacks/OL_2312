@@ -1,4 +1,4 @@
-# サンプル（プロダクト名）
+# PaaD: Paper as a Device
 
 [![IMAGE ALT TEXT HERE](https://jphacks.com/wp-content/uploads/2023/07/JPHACKS2023_ogp.png)](https://www.youtube.com/watch?v=yYRQEdfGjEg)
 
@@ -60,5 +60,4 @@ pdfであれば何でもいいので、ターゲットが広い（研究者：�
 * https://github.com/jphacks/OL_2312/blob/master/public/shotting.js
 
 #### 製品に取り入れた研究内容（データ・ソフトウェアなど）（※アカデミック部門の場合のみ提出必須）
-* 
-* 
+特になし
