@@ -11,6 +11,7 @@ window.onload = () => {
   const clippingFrame = document.querySelector("#clipping-frame");
   const orgClip = document.querySelector("#org-clip");
   const editedClip = document.querySelector("#edited-clip");
+  const ctxEdited = document.querySelector("#edited-clip").getContext("2d");
   var canvases;
 
   const downloadLink = document.querySelector("#download-link");
@@ -58,6 +59,24 @@ window.onload = () => {
       // 失敗
       console.log(err.name + ": " + err.message);
     });
+  
+  function deleteClip(i){
+    ctxEdited.beginPath();
+    ctxEdited.rect(minXList[i], minYList[i], maxXList[i]-minXList[i], maxYList[i]-minYList[i]);
+    ctxEdited.strokeStyle = `rgba(0, 0, 0)`;
+    ctxEdited.lineWidth = 4;
+    ctxEdited.stroke();
+    //ctxEdited.clearRect(minXList[i], minYList[i], maxXList[i]-minXList[i], maxYList[i]-minYList[i]);
+    canvases.splice(i, 1);
+    minXList.splice(i, 1);
+    minYList.splice(i, 1);
+    maxXList.splice(i, 1);
+    maxYList.splice(i, 1);
+  }
+  
+  function calcClipArea(i){
+    return (maxXList[i]-minXList[i])*(maxYList[i]-minYList[i]);
+  }
 
   // shutter button
   document.querySelector("#shutter").addEventListener("click", () => {
@@ -126,7 +145,6 @@ window.onload = () => {
     canvases = new Array(contours.size());
     contexts = new Array(contours.size());
     
-    const ctxEdited = document.querySelector("#edited-clip").getContext("2d");
     (async () => {
       for await (i of [...Array(contours.size()).keys()]) {
 
@@ -164,7 +182,9 @@ window.onload = () => {
         let context = canvas.getContext("2d");*/
 
         contexts[i] = await canvases[i].getContext("2d");
-        
+        // let imgBgRemoved = new cv.Mat();
+        // cv.Canny(img, imgBgRemoved, 100, 200, 3, false);
+
         await contexts[i].drawImage(img, x0, y0, w, h, 0, 0, w, h);
         
         // let clip = document.createElement("div");
@@ -185,30 +205,50 @@ window.onload = () => {
           if(minXList[j] < minXList[i] && maxXList[i] < maxXList[j] 
             && minYList[j] < minYList[i] && maxYList[i] < maxYList[j]){
             includedCanvasIndices.add(i);
-            console.log(`(i, j)=(${i}, ${j})`);
             break;
           }
         }
+        if( calcClipArea(i) < 50){ // 面積が25px^2より小さい
+          includedCanvasIndices.add(i);
+        }
       }
-      console.log(canvases.length);
-      console.log(Array.from(includedCanvasIndices).sort((a, b) => { return b-a; }));
-      for(let i of Array.from(includedCanvasIndices).sort((a, b) => { return b-a; })){
-        canvases.splice(i, 1);
-        minXList.splice(i, 1);
-        minYList.splice(i, 1);
-        maxXList.splice(i, 1);
-        maxYList.splice(i, 1);
-      }
-      console.log(canvases.length);
 
+      console.log(canvases.length);
+      for(let i of Array.from(includedCanvasIndices).sort((a, b) => { return b-a; })){
+        deleteClip(i);
+      }
+      console.log(includedCanvasIndices.size);
+      console.log(canvases.length);
+      
       for(let i=0; i<canvases.length; i++){
         ctxEdited.beginPath();
         ctxEdited.rect(minXList[i], minYList[i], maxXList[i]-minXList[i], maxYList[i]-minYList[i]);
-        ctxEdited.strokeStyle = 'deepskyblue';
+        ctxEdited.strokeStyle = `rgb(0, 0, ${127 + 127/10.0*i * 0.8})`;
         ctxEdited.lineWidth = 4;
         ctxEdited.stroke();
       }
     });
+  });
+
+  editedClip.addEventListener("dblclick", (event) => {
+    // console.log(`(offsetX, offsetY) = (${event.offsetX}, ${event.offsetY})`);
+    // console.log("minXList:", minXList);
+    // console.log("maxXList:", maxXList);
+    // console.log("minYList:", minYList);    
+    // console.log("maxYList:", maxYList);
+
+    let targetIndex = -1; 
+    let minArea = editedClip.width * editedClip.height;
+    for(let i=0; i<canvases.length; i++){
+      if(minXList[i] < event.offsetX && event.offsetX < maxXList[i] 
+        && minYList[i] < event.offsetY && event.offsetY < maxYList[i]){
+        if(calcClipArea(i) < minArea){
+          targetIndex = i;
+          minArea = calcClipArea(i);
+        }
+      }
+    }
+    if(targetIndex != -1) deleteClip(targetIndex);
   });
 
   document.querySelector("#btn-submit").addEventListener("click", () => {

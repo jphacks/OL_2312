@@ -80,7 +80,9 @@ var i = 0;
 
 app.get("/pdf-list-names", (req, res) => {
   fs.readdir("./uploads", (err, files) => {
-    res.send(files.join());
+    if(files){
+      res.send(files.join());
+    }
   });
 });
 
