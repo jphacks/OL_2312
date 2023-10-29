@@ -163,6 +163,7 @@ window.onload = () => {
         }).then(data => {
             (async () => {
                 for await (html of data.split("\n")) {
+                    let viewerWrapper = document.querySelector("#viewer-wrapper");
                     let viewer = document.querySelector("#pdf-viewer");
                     let match = html.match(/name="(.*?)"/);
 
@@ -208,8 +209,8 @@ window.onload = () => {
 
                             viewer.onmousemove = (event) => {
                                 event.preventDefault();
-                                div.style.top = viewer.scrollTop + event.clientY - viewer.offsetTop - offsetY + "px";
-                                div.style.left = viewer.scrollLeft + event.clientX - viewer.offsetLeft - offsetX + "px";
+                                div.style.top = viewerWrapper.scrollTop + event.clientY - viewerWrapper.offsetTop - offsetY + "px";
+                                div.style.left = viewerWrapper.scrollLeft + event.clientX - viewerWrapper.offsetLeft - offsetX + "px";
                             }
 
                             img.onmouseup = (event) => {
@@ -229,7 +230,6 @@ window.onload = () => {
                     img.ondblclick = (event) => {
                         div.remove();
                     }
-
                     viewer.append(div);
                 }
             })();
@@ -237,10 +237,14 @@ window.onload = () => {
     }
 
     function setPDF(url) {
+        const options = {
+            cMapUrl: "https://unpkg.com/pdfjs-dist@2.16.105/cmaps/", // 文字コードマップのURL
+            cMapPacked: true, // 文字コードマップを圧縮するかどうか
+        };
         document.querySelector("#pdf-viewer").innerHTML = "";
         canvases = [];
         contexts = [];
-        pdfjsLib.getDocument(url).promise.then((pdf) => {
+        pdfjsLib.getDocument(url, options).promise.then((pdf) => {
             // ページの順番を保つために同期
             (async () => {
                 for await (i of [...Array(pdf.numPages + 1).keys()].slice(1)) {

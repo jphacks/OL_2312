@@ -137,6 +137,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"
         integrity="sha512-BbrZ76UNZq5BhH7LL7pn9A4TKQpQeNCHOo65/akfelcIBbcVvYWOFQKPXIrykE3qZxYjmDX573oa4Ywsc7rpTw=="
         crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <meta charset="UTF-8">
 </head>
 
 <body>
@@ -160,7 +161,7 @@
             <div class="container">
                 <div class="contents">
                     <div class="content" id="figures">
-                        <script>
+                        <script charset="UTF-8">
                             function removeExistingImages() {
                                 let images = document.getElementById("figures").getElementsByTagName("img");
                                 while (images.length > 0) {
@@ -224,7 +225,7 @@
             </div>
         </main>
     </div>
-    <script src="pdf-viewer.js"></script>
+    <script src="pdf-viewer.js" charset="UTF-8"></script>
 </body>
 
 <!--
