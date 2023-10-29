@@ -11,8 +11,10 @@ window.onload = () => {
   const clippingFrame = document.querySelector("#clipping-frame");
   const orgClip = document.querySelector("#org-clip");
   const editedClip = document.querySelector("#edited-clip");
+  let img = document.querySelector("#image");
   const ctxEdited = document.querySelector("#edited-clip").getContext("2d");
   var canvases;
+  var selectedCanvasIndices = new Set();
 
   const downloadLink = document.querySelector("#download-link");
   const downloadButton = document.querySelector("#download-button");
@@ -60,14 +62,23 @@ window.onload = () => {
       console.log(err.name + ": " + err.message);
     });
   
-  function deleteClip(i){
+  function drawClipFrame(x, y, w, h, color){
     ctxEdited.beginPath();
-    ctxEdited.rect(minXList[i], minYList[i], maxXList[i]-minXList[i], maxYList[i]-minYList[i]);
-    ctxEdited.strokeStyle = `rgba(0, 0, 0)`;
+    ctxEdited.rect(x, y, w, h);
+    ctxEdited.strokeStyle = color;
     ctxEdited.lineWidth = 4;
     ctxEdited.stroke();
+  }
+
+  function removeClipFrame(i){
+    drawClipFrame(minXList[i], minYList[i], maxXList[i]-minXList[i], maxYList[i]-minYList[i], `rgba(0, 0, 0)`);
+  }
+
+  function removeClip(i){
+    removeClipFrame(i);
     //ctxEdited.clearRect(minXList[i], minYList[i], maxXList[i]-minXList[i], maxYList[i]-minYList[i]);
     canvases.splice(i, 1);
+    contexts.splice(i, 1);
     minXList.splice(i, 1);
     minYList.splice(i, 1);
     maxXList.splice(i, 1);
@@ -111,7 +122,6 @@ window.onload = () => {
     // downloadButton.disabled = null;
     // downloadLink.href = orgClip.toDataURL("image/png");
 
-    let img = document.querySelector("#image");
     //let canvas = document.querySelector("#canvas");
     //let context = canvas.getContext("2d");
 
@@ -176,26 +186,11 @@ window.onload = () => {
         canvases[i].width = w;
         canvases[i].height = h;
 
-        /*let canvas = document.createElement("canvas");
-        canvas.width = w;
-        canvas.height = h;
-        let context = canvas.getContext("2d");*/
-
         contexts[i] = await canvases[i].getContext("2d");
-        // let imgBgRemoved = new cv.Mat();
-        // cv.Canny(img, imgBgRemoved, 100, 200, 3, false);
-
+        
         await contexts[i].drawImage(img, x0, y0, w, h, 0, 0, w, h);
         
-        // let clip = document.createElement("div");
-        // clip.setAttribute("class", "clip");
-        // clip.setAttribute("clip-id", i);
-        // clip.style.top = `${x0}.px`;
-        // clip.style.left = `${y0}.px`;
-        // clip.style.width = `${w}.px`;
-        // clip.style.height = `${h}.px`;
-        // document.querySelector("#edited-clip").parentElement.append(clip);
-        //document.querySelector("#canvases").append(canvas);
+        // document.querySelector("#edited-clip").parentElement.append(canvases[i]);
       }
     })().then(()=>{
       let includedCanvasIndices = new Set();
@@ -215,19 +210,65 @@ window.onload = () => {
 
       console.log(canvases.length);
       for(let i of Array.from(includedCanvasIndices).sort((a, b) => { return b-a; })){
-        deleteClip(i);
+        removeClip(i);
       }
       console.log(includedCanvasIndices.size);
       console.log(canvases.length);
       
       for(let i=0; i<canvases.length; i++){
-        ctxEdited.beginPath();
-        ctxEdited.rect(minXList[i], minYList[i], maxXList[i]-minXList[i], maxYList[i]-minYList[i]);
-        ctxEdited.strokeStyle = `rgb(0, 0, ${127 + 127/10.0*i * 0.8})`;
-        ctxEdited.lineWidth = 4;
-        ctxEdited.stroke();
+        let color = `rgb(0, 0, 255)`;
+        drawClipFrame(minXList[i], minYList[i], maxXList[i]-minXList[i], maxYList[i]-minYList[i], color);
       }
     });
+  });
+
+  editedClip.addEventListener("click", (event) => {
+    if ((event.ctrlKey && !event.metaKey) || (!event.ctrlKey && event.metaKey)) {
+      console.log(`offsetX:${event.offsetX}, offsetY:${event.offsetY}`);
+      for(let i=0; i<canvases.length; i++){
+        if(minXList[i] < event.offsetX && event.offsetX < maxXList[i] 
+          && minYList[i] < event.offsetY && event.offsetY < maxYList[i]){
+          selectedCanvasIndices.add(i);
+        }
+      }
+    }
+  });
+
+  document.addEventListener("keyup", () => {
+    let x0 = editedClip.width;
+    let y0 = editedClip.height;
+    let x1 = 0;
+    let y1 = 0;
+    console.log(selectedCanvasIndices);
+    if(selectedCanvasIndices.size > 1){    
+      let sortedIndices = Array.from(selectedCanvasIndices).sort((a, b) => {return b-a;});
+      console.log("sortedIndices:", sortedIndices);
+      for(let i of sortedIndices){
+        x0 = Math.min(x0, minXList[i]);
+        x1 = Math.max(x1, maxXList[i]);
+        y0 = Math.min(y0, minYList[i]);
+        y1 = Math.max(y1, maxYList[i]);
+        console.log("clip:", minXList[i], minYList[i], maxXList[i], maxYList[i]);
+        console.log(x0, y0, x1, y1);
+      }
+      for(let i=0; i<sortedIndices.length-1; i++){
+        // console.log("remove target: ", sortedIndices[i]);
+        removeClip(sortedIndices[i]);
+      }
+
+      let targetIndex = sortedIndices[sortedIndices.length-1];
+      // console.log("remove target: ", targetIndex);
+      removeClipFrame(targetIndex);
+      canvases[targetIndex].width = x1-x0;
+      canvases[targetIndex].height = y1-y0;
+      minXList[targetIndex] = x0;
+      minYList[targetIndex] = y0;
+      maxXList[targetIndex] = x1;
+      maxYList[targetIndex] = y1;
+      contexts[targetIndex].drawImage(img, x0, y0, x1-x0, y1-y0, 0, 0, x1-x0, y1-y0);
+      drawClipFrame(x0, y0, x1-x0, y1-y0, "rgb(0, 0, 255)");
+    }
+    selectedCanvasIndices.clear();
   });
 
   editedClip.addEventListener("dblclick", (event) => {
@@ -248,10 +289,14 @@ window.onload = () => {
         }
       }
     }
-    if(targetIndex != -1) deleteClip(targetIndex);
+    if(targetIndex != -1) removeClip(targetIndex);
   });
 
   document.querySelector("#btn-submit").addEventListener("click", () => {
+    console.log("minXList:", minXList);
+    console.log("maxXList:", maxXList);
+    console.log("minYList:", minYList);    
+    console.log("maxYList:", maxYList);
     var formData = new FormData();
     
     let promises = canvases.map((canvas) => {
