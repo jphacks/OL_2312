@@ -3,7 +3,7 @@
 
 <head>
     <style>
-        .container {
+        /*.container {
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -11,34 +11,32 @@
             float: left;
             height: 100vh;
             overflow: scroll;
-        }
+        }*/
 
-        .test{
+        .test {
             display: flex;
             flex-direction: row;
         }
 
         #figures {
-            display: flex;
             flex-direction: column;
-            overflow-y: scroll;
+            overflow: scroll;
+            width: 15%;
         }
 
-        #pdf-viewer {
+        /*#pdf-viewer {
             position: relative;
-            overflow-y: scroll;
-            /*aspect-ratio: 1 / 1.415;
-            width: fit-content;*/
+            overflow: scroll;
             width: 612px;
             height: 792px;
             display: flex;
             flex-direction: column;
             border: 1px solid black;
-        }
+        }*/
 
-        #pdf-viewer canvas {
+        /*#pdf-viewer canvas {
             display: inline-block;
-        }
+        }*/
 
         #pdf-viewer .img-wrapper img {
             width: 100%;
@@ -68,20 +66,57 @@
             z-index: 100;
         }
 
-        .side-menu {
-            overflow: scroll;
-            width: 300px;
+        button {
+            width: fit-content;
+        }
+
+        * {
+            margin: 0;
+        }
+
+        body {
+            display: flex;
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        nav {
+            width: 200px;
+            border-right: 1px solid black;
+        }
+
+        #pdfs {
+            overflow-x: scroll;
             height: 100%;
         }
 
         ul {
-            /* width: fit-content; */
-            height: 100%;
             list-style-type: none;
         }
 
-        button{
-            width: fit-content;
+        header {
+            width: 100%;
+            background-color: white;
+            display: flex;
+            justify-content: center;
+        }
+
+        .contents {
+            display: flex;
+        }
+
+        .content {
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        #pdf-viewer {
+            position: relative;
+            display: flex;
+            width: 612px;
+            flex-direction: column;
+            justify-content: center;
         }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"
@@ -96,88 +131,91 @@
 </head>
 
 <body>
-    <div class="container">
-        <nav class="side-menu">
-            <h1>ドキュメント</h1>
-            <ul id="pdfs"></ul>
-        </nav>
-    </div>
-    <div class="test">
-    <div class="container">
-        <!-- <img id="test"> -->
-        <div id="figures">
-            <script>
-                function removeExistingImages(){
-                    let images = document.getElementById("figures").getElementsByTagName("img");
-                    while(images.length > 0){
-                        images[0].parentNode.removeChild(images[0]);
-                    }
-                }
-
-                function loadClips(){
-                    fetch("/get-clip-names").then(res => {
-                        return res.text();
-                    }).then(data => {
-                        (async () => {
-                            for (_filename of data.split(",")) {
-                                const filename = _filename;
-                                const res = await fetch(`/get-clip/${filename}`);
-                                const buffer = await res.arrayBuffer();
-                                const url = await URL.createObjectURL(new Blob([buffer], { type: "image/png" }));
-                                figures.innerHTML += `<img src="${url}" name="${filename}">`;
+    <nav class="side-menu">
+        <h1>ドキュメント</h1>
+        <ul id="pdfs"></ul>
+    </nav>
+    <div style="width: 100%;">
+        <header>
+            <form method="post" action="/edit-data" id="edit-data">
+                <input type="hidden" name="edit-data" value="">
+                <input type="button" id="save" value="編集を保存">
+            </form>
+            <button id="download">ダウンロード</button>
+            <form method="post" enctype="multipart/form-data" action="/pdf-upload" id="pdf-form">
+                <input type="file" id="upload" name="pdf" accept="application/pdf" />
+                <input type="button" id="submit" value="アップロード" />
+            </form>
+        </header>
+        <main>
+            <div class="container">
+                <div class="contents">
+                    <div class="content" id="figures">
+                        <script>
+                            function removeExistingImages() {
+                                let images = document.getElementById("figures").getElementsByTagName("img");
+                                while (images.length > 0) {
+                                    images[0].parentNode.removeChild(images[0]);
+                                }
                             }
-                        })();
-                    });
-                }
-                
-                let figures = document.getElementById("figures");
 
-                function chk(url) {
-                    return new Promise(function (resolve, reject) {
-                        const img = new Image();
-                        img.src = url;
-                        img.onload = function () { return resolve(url) };
-                        img.onerror = function () { return reject(url) };
-                    });
-                };
+                            function loadClips() {
+                                fetch("/get-clip-names").then(res => {
+                                    return res.text();
+                                }).then(data => {
+                                    (async () => {
+                                        for (_filename of data.split(",")) {
+                                            const filename = _filename;
+                                            const res = await fetch(`/get-clip/${filename}`);
+                                            const buffer = await res.arrayBuffer();
+                                            const url = await URL.createObjectURL(new Blob([buffer], { type: "image/png" }));
+                                            figures.innerHTML += `<img src="${url}" name="${filename}">`;
+                                        }
+                                    })();
+                                });
+                            }
 
-                function loadFigures(i) {
-                    let url = `figures/${i}.png`;
-                    chk(url)
-                        .then((url) => {
-                            figures.innerHTML += `<img src="${url}">`;
-                            loadFigures(i + 1);
-                        })
-                        .catch((url) => {
-                            //console.log(i, "not found");
-                        });
-                }
+                            let figures = document.getElementById("figures");
 
-                function loadImages(){
-                    removeExistingImages();
-                    loadFigures(0);
-                    loadClips();
-                }
-                
-                loadImages();
-            </script>
-        </div>
+                            function chk(url) {
+                                return new Promise(function (resolve, reject) {
+                                    const img = new Image();
+                                    img.src = url;
+                                    img.onload = function () { return resolve(url) };
+                                    img.onerror = function () { return reject(url) };
+                                });
+                            };
+
+                            function loadFigures(i) {
+                                let url = `figures/${i}.png`;
+                                chk(url)
+                                    .then((url) => {
+                                        figures.innerHTML += `<img src="${url}">`;
+                                        loadFigures(i + 1);
+                                    })
+                                    .catch((url) => {
+                                        //console.log(i, "not found");
+                                    });
+                            }
+
+                            function loadImages() {
+                                removeExistingImages();
+                                loadFigures(0);
+                                loadClips();
+                            }
+
+                            loadImages();
+                        </script>
+                    </div>
+                    <div class="content" id="viewer-wrapper" style="width: 85%;">
+                        <div id="pdf-viewer">
+                            <!--<div class="resizable"><img src="fig1.png"></div>-->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
     </div>
-    <div class="container">
-        <div id="pdf-viewer">
-            <!--<div class="resizable"><img src="fig1.png"></div>-->
-        </div>
-        <form method="post" action="/edit-data" id="edit-data">
-            <input type="hidden" name="edit-data" value="">
-            <input type="button" id="save" value="編集を保存">
-        </form>
-        <button id="download">ダウンロード</button>
-        <form method="post" enctype="multipart/form-data" action="/pdf-upload" id="pdf-form">
-            <input type="file" id="upload" name="pdf" accept="application/pdf" />
-            <input type="button" id="submit" value="保存" />
-        </form>
-    </div>
-</div>
     <script src="pdf-viewer.js"></script>
 </body>
 

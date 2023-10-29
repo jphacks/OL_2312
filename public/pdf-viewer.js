@@ -16,7 +16,6 @@ window.onload = () => {
     }
 
     document.querySelectorAll("a").forEach(e => {
-        console.log(e);
         e.onclick = (event) => {
             setPDF(e.href);
             return false;
@@ -25,7 +24,6 @@ window.onload = () => {
 
     document.querySelectorAll("#figures img").forEach((e) => {
         e.ondragstart = (event) => {
-            console.log(event.target);
             event.dataTransfer.setData("text/html", event.target.outerHTML);
             event.dataTransfer.setData("offsetX", event.offsetX);
             event.dataTransfer.setData("offsetY", event.offsetY);
@@ -36,9 +34,7 @@ window.onload = () => {
         event.preventDefault();
     };
 
-    document.querySelector("#pdf-viewer").addEventListener("drop", function (event) {
-
-        console.log(event.target, event.currentTarget, this);
+    document.querySelector("#viewer-wrapper").addEventListener("drop", function (event) {
 
         let div = htmlToElement(`<div class="img-wrapper">${event.dataTransfer.getData("text/html")}</div>`);
         let img = div.lastChild;
@@ -69,14 +65,14 @@ window.onload = () => {
 
                 //div.style.transform = `rotate(30deg)`;
 
-                this.onmousemove = (event) => {
+                document.querySelector("#pdf-viewer").onmousemove = (event) => {
                     event.preventDefault();
                     div.style.top = this.scrollTop + event.clientY - this.offsetTop - offsetY + "px";
                     div.style.left = this.scrollLeft + event.clientX - this.offsetLeft - offsetX + "px";
                 }
 
                 img.onmouseup = (event) => {
-                    this.onmousemove = null;
+                    document.querySelector("#pdf-viewer").onmousemove = null;
                 }
 
             } else if (event.button == 2) {
@@ -85,10 +81,7 @@ window.onload = () => {
                 let m = parseInt(div.style.transform.match(/[0-9]+/g));
                 if (m) angle = Number(m);
 
-                console.log(angle);
-
                 div.style.transform = `rotate(${angle + 10}deg)`;
-                console.log(div.style.transform);
             }
         }
 
@@ -99,7 +92,7 @@ window.onload = () => {
         div.style.top = this.scrollTop + event.clientY - this.offsetTop - (event.dataTransfer.getData("offsetY")) + "px";
         div.style.left = this.scrollLeft + event.clientX - this.offsetLeft - Number(event.dataTransfer.getData("offsetX")) + "px";
 
-        this.append(div);
+        document.querySelector("#pdf-viewer").append(div);
 
         event.dataTransfer.clearData();
     }, false);
@@ -121,12 +114,13 @@ window.onload = () => {
         fetch(action, options).then(res => {
             return res.arrayBuffer();
         }).then(buffer => {
-            console.log(buffer);
             const url = URL.createObjectURL(new Blob([buffer], { type: "application/pdf" }));
             let li = document.createElement("li");
             let a = htmlToElement(`<a href="${url}">${document.querySelector("#upload").files[0].name}</a>`);
             a.onclick = (event) => {
+                currFilename = a.innerHTML;
                 setPDF(a.href);
+                setImages(a.innerHTML);
                 return false;
             }
             li.append(a);
@@ -154,79 +148,7 @@ window.onload = () => {
                 a.onclick = (event) => {
                     currFilename = filename;
                     setPDF(a.href);
-                    fetch(`/edit-data/${filename}`, { method: "get" }).then(res => {
-                        return res.text();
-                    }).then(data => {
-                        (async()=>{
-                            for await(html of data.split("\n")) {
-                            let viewer = document.querySelector("#pdf-viewer");
-
-                            const res = await fetch(`/get-clip/${filename}`);
-                            const buffer = await res.arrayBuffer();
-                            const url = URL.createObjectURL(new Blob([buffer], { type: "image/png" }));
-
-                            let div = htmlToElement(html);
-                            let img = div.lastChild;
-
-                            img.setAttribute("draggable", "false");
-
-                            img.href = url;
-
-
-                            div.onmouseenter = (event) => {
-                                div.classList.add("hover");
-                            }
-
-                            div.onmouseleave = (event) => {
-                                div.classList.remove("hover");
-                            }
-
-                            img.oncontextmenu = (event) => {
-                                return false;
-                            }
-
-                            img.onmousedown = (event) => {
-
-                                if (!div.classList.contains("selected")) {
-                                    div.classList.add("selected");
-                                }
-
-                                if (event.button == 0) {
-                                    let offsetX = event.offsetX;
-                                    let offsetY = event.offsetY;
-
-                                    //div.style.transform = `rotate(30deg)`;
-
-                                    viewer.onmousemove = (event) => {
-                                        event.preventDefault();
-                                        div.style.top = viewer.scrollTop + event.clientY - viewer.offsetTop - offsetY + "px";
-                                        div.style.left = viewer.scrollLeft + event.clientX - viewer.offsetLeft - offsetX + "px";
-                                    }
-
-                                    img.onmouseup = (event) => {
-                                        viewer.onmousemove = null;
-                                    }
-
-                                } else if (event.button == 2) {
-                                    let angle = 0;
-
-                                    let m = parseInt(div.style.transform.match(/[0-9]+/g));
-                                    if (m) angle = Number(m);
-
-                                    console.log(angle);
-
-                                    div.style.transform = `rotate(${angle + 10}deg)`;
-                                    console.log(div.style.transform);
-                                }
-                            }
-
-                            img.ondblclick = (event) => {
-                                div.remove();
-                            }
-
-                            viewer.append(div);
-                        }})();
-                    });
+                    setImages(filename);
                     return false;
                 }
                 li.append(a);
@@ -234,6 +156,85 @@ window.onload = () => {
             }
         })();
     });
+
+    function setImages(filename) {
+        fetch(`/edit-data/${filename}`, { method: "get" }).then(res => {
+            return res.text();
+        }).then(data => {
+            (async () => {
+                for await (html of data.split("\n")) {
+                    let viewer = document.querySelector("#pdf-viewer");
+                    let match = html.match(/name="(.*?)"/);
+
+                    if (match != null) {
+                        var name = match[1];
+                    }
+
+                    const res = await fetch(`/get-clip/${name}`);
+                    const buffer = await res.arrayBuffer();
+                    const url = URL.createObjectURL(new Blob([buffer], { type: "image/png" }));
+
+                    let div = htmlToElement(html);
+                    let img = div.lastChild;
+
+                    img.setAttribute("draggable", "false");
+
+                    img.src = url;
+
+
+                    div.onmouseenter = (event) => {
+                        div.classList.add("hover");
+                    }
+
+                    div.onmouseleave = (event) => {
+                        div.classList.remove("hover");
+                    }
+
+                    img.oncontextmenu = (event) => {
+                        return false;
+                    }
+
+                    img.onmousedown = (event) => {
+
+                        if (!div.classList.contains("selected")) {
+                            div.classList.add("selected");
+                        }
+
+                        if (event.button == 0) {
+                            let offsetX = event.offsetX;
+                            let offsetY = event.offsetY;
+
+                            //div.style.transform = `rotate(30deg)`;
+
+                            viewer.onmousemove = (event) => {
+                                event.preventDefault();
+                                div.style.top = viewer.scrollTop + event.clientY - viewer.offsetTop - offsetY + "px";
+                                div.style.left = viewer.scrollLeft + event.clientX - viewer.offsetLeft - offsetX + "px";
+                            }
+
+                            img.onmouseup = (event) => {
+                                viewer.onmousemove = null;
+                            }
+
+                        } else if (event.button == 2) {
+                            let angle = 0;
+
+                            let m = parseInt(div.style.transform.match(/[0-9]+/g));
+                            if (m) angle = Number(m);
+
+                            div.style.transform = `rotate(${angle + 10}deg)`;
+                        }
+                    }
+
+                    img.ondblclick = (event) => {
+                        div.remove();
+                    }
+
+                    viewer.append(div);
+                }
+            })();
+        });
+    }
 
     function setPDF(url) {
         document.querySelector("#pdf-viewer").innerHTML = "";

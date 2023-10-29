@@ -62,14 +62,15 @@ app.get('/get-clip-names', (req, res) => {
 });
 
 app.get('/get-clip/:filename', (req, res) => {
+  console.log("get-clip",req.params.filename);
   let filename = req.params.filename;
   let filedir = path.join(__dirname, "upload");
   let filepath = path.join(filedir, filename);
-  res.sendFile(filepath, {
+  res.sendFile(filepath/*, {
     headers: {
       "Content-Disposition": `attachment; filename="${filename}`,
     }
-  });
+  }*/);
 });
 
 app.listen(PORT, HOST, () => {
