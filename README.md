@@ -21,9 +21,8 @@
 6. ドラックアンドドロップした図を、拡大・縮小・回転などをして整形する。
 ![setImage](https://github.com/jphacks/OL_2312/assets/84440125/21bb86b1-9ebb-46dc-a123-b5f1e71dd2b7)
 7. 画像を載せたpdfの情報をサーバに反映させたり、ローカルにダウンロードする。
-#### デモ動画
+#### [デモ動画](https://drive.google.com/file/d/1eQ1opMkzWPaVlIjKVKs981rM3QREfm2w/view?usp=drive_link)
 前述の手順を一通り実行
-[![ol_2312_demo-video](https://drive.google.com/file/d/1AOOY8GORDpgD2Me5FxRQGqr-PTGc2CLo/view?usp=sharing)](https://drive.google.com/file/d/1eQ1opMkzWPaVlIjKVKs981rM3QREfm2w/view?usp=drive_link)
 
 ### 特長
 #### 1. 特長1
