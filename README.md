@@ -23,7 +23,8 @@
 7. 画像を載せたpdfの情報をサーバに反映させたり、ローカルにダウンロードする。
 #### デモ動画
 前述の手順を一通り実行
-<iframe src="https://drive.google.com/file/d/1eQ1opMkzWPaVlIjKVKs981rM3QREfm2w/preview" width="640" height="480" allow="autoplay"></iframe>
+[![ol_2312_demo-video](https://drive.google.com/file/d/1AOOY8GORDpgD2Me5FxRQGqr-PTGc2CLo/view?usp=sharing)](https://drive.google.com/file/d/1eQ1opMkzWPaVlIjKVKs981rM3QREfm2w/view?usp=drive_link)
+
 ### 特長
 #### 1. 特長1
 単に写真を取り込むのではなく、紙に書かれた複数の図形を、分離・抽出することができる。
