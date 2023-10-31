@@ -18,11 +18,6 @@
     border: solid;
     width: fit-content;
 }
-#clipping-frame{
-    position: absolute;
-    border-color: black;
-    transform: translate(-50%, -50%);
-}
 h1{
     margin: 10px;
 }
