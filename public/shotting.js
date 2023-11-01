@@ -19,7 +19,7 @@ class Figure {
     await this.context.drawImage(
       srcClip,
       this.xMin,
-      this.xMax,
+      this.yMin,
       this.width,
       this.height,
       0,
@@ -67,6 +67,7 @@ class ClipEditor {
     let figure = new Figure(xMin, yMin, width, height);
     await figure.setContext(this.srcClip);
     this.figures.push(figure);    
+    // document.querySelector("#edited-clip").parentElement.append(figure.canvas);
   }
 
   async addFigureFromContour(cnt) {
@@ -81,10 +82,10 @@ class ClipEditor {
 
     let xMin = Math.min(...xList);
     let yMin = Math.min(...yList);
-    let width = Math.max(...yList) - xMin;
+    let width = Math.max(...xList) - xMin;
     let height = Math.max(...yList) - yMin;
 
-    this.addFigure(xMin, yMin, width, height);
+    await this.addFigure(xMin, yMin, width, height);
   }
 
   drawFrame(i, color="rgb(0, 0, 255)"){
@@ -97,6 +98,10 @@ class ClipEditor {
     this.figures.splice(i, 1);
   }
 
+  clearFigures(){
+    this.figures.length = 0;
+  }
+
   removeIncludedFigures() {
     let removeFiguresIndices = new Set();
     for (let i = 0; i < this.figures.length; i++) {
@@ -107,10 +112,10 @@ class ClipEditor {
         let fig2 = this.figures[j];
 
         if (
-          fig1.xMin < fig2.xMin &&
-          fig2.xMax < fig1.xMax &&
-          fig1.yMin < fig2.yMin &&
-          fig2.yMax < fig2.yMax
+          fig2.xMin < fig1.xMin &&
+          fig1.xMax < fig2.xMax &&
+          fig2.yMin < fig1.yMin &&
+          fig1.yMax < fig2.yMax
         ) {
           removeFiguresIndices.add(i);
           break;
@@ -194,7 +199,6 @@ window.onload = () => {
   const orgClip = document.querySelector("#org-clip");
   const orgClipContext = orgClip.getContext("2d");
   const editedClip = document.querySelector("#edited-clip");
-  const editedClipContext = editedClip.getContext("2d");
   clipEditor = new ClipEditor(orgClip, editedClip);
 
   // htmlの書き換え
@@ -235,7 +239,7 @@ window.onload = () => {
     }, 500);
 
     // orgClipに画像を貼り付ける
-    orgClipContext.drawImage(video, 0, 0, cameraWidth, cameraHeight);
+    orgClipContext.drawImage(video, 0, 0, cameraWidth, cameraHeight, 0, 0, cameraWidth, cameraHeight);
 
     // 線画抽出
     let src = cv.imread(orgClip);
@@ -256,16 +260,17 @@ window.onload = () => {
       cv.CHAIN_APPROX_SIMPLE,
       { x: 0, y: 0 }
     );
-
+    
+    clipEditor.clearFigures();
     (async () => {
       for await (i of [...Array(contours.size()).keys()]) {
+        console.log("num contours:", contours.size());
         let cnt = contours.get(i);
-        clipEditor.addFigureFromContour(cnt);
-        // document.querySelector("#edited-clip").parentElement.append(canvases[i]);
+        await clipEditor.addFigureFromContour(cnt);
       }
     })().then(() => {
       clipEditor.removeIncludedFigures();
-
+      console.log("num figures:", clipEditor.figures.length);
       for (let i=0; i<clipEditor.figures.length; i++) {
         clipEditor.drawFrame(i);
       }
@@ -290,6 +295,7 @@ window.onload = () => {
   document.addEventListener("keyup", (event) => {
     if (event.key != "Control") return;
     clipEditor.mergeSelectedFigures();
+    console.log(clipEditor.figures);
   });
 
   document.querySelector("#btn-submit").addEventListener("click", () => {
